@@ -41,6 +41,10 @@ export default function RootLayout({ children }) {
                 <span className="nav-icon">🎯</span>
                 <span>Command</span>
               </a>
+              <a href="/playbook" className="nav-link">
+                <span className="nav-icon">📖</span>
+                <span>Playbook</span>
+              </a>
             </div>
             <div className="sidebar-footer">
               <div className="user-badge">
