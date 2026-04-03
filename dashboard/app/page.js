@@ -345,7 +345,7 @@ function AgentLabel({ cx, cy, agent }) {
 function RoomLabel({ x, y, text, sub }) {
   return (
     <g style={{pointerEvents:'none'}}>
-      <text x={x} y={y} textAnchor="middle" style={{fontFamily:'var(--font-heading)',fontWeight:600,fontize:'8px',fill:'#A0AEC0',letterSpacing:'1px'}}>{text}</text>
+      <text x={x} y={y} textAnchor="middle" style={{fontFamily:'var(--font-heading)',fontWeight:600,fontSize:'8px',fill:'#A0AEC0',letterSpacing:'1px'}}>{text}</text>
       {sub && <text x={x} y={y+10} textAnchor="middle" style={{fontSize:'6.5px',fill:'#CBD5E0'}}>{sub}</text>}
     </g>
   )
