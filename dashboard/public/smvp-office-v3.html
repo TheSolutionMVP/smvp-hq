@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMVP Auto-Office HQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #0B0D1A 0%, #1a1d3a 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px 30px;
+            background: rgba(11, 13, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #9333EA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9333EA, #C8F04E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-time {
+            font-size: 14px;
+            color: #C8F04E;
+            font-weight: 600;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            padding: 15px 30px;
+            display: flex;
+            gap: 40px;
+            background: rgba(147, 51, 234, 0.05);
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+            font-size: 14px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #C8F04E;
+        }
+
+        /* Main Office Container */
+        .office-container {
+            flex: 1;
+            padding: 30px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .office-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 4/3;
+        }
+
+        /* Cubicle Base Styles */
+        .cubicle {
+            background: rgba(30, 30, 60, 0.6);
+            border: 2px solid rgba(147, 51, 234, 0.4);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 200px;
+        }
+
+        .cubicle:hover {
+            border-color: #C8F04E;
+            box-shadow: 0 0 30px rgba(200, 240, 78, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Agent-specific colors */
+        .nova { --accent-color: #FF6B9D; border-color: rgba(255, 107, 157, 0.5); }
+        .rex { --accent-color: #00D9FF; border-color: rgba(0, 217, 255, 0.5); }
+        .ace { --accent-color: #FFD700; border-color: rgba(255, 215, 0, 0.5); }
+        .dash { --accent-color: #00FF88; border-color: rgba(0, 255, 136, 0.5); }
+        .pixel { --accent-color: #FF6B9D; border-color: rgba(255, 107, 157, 0.5); }
+        .prism { --accent-color: #FF1493; border-color: rgba(255, 20, 147, 0.5); }
+        .echo { --accent-color: #00D9FF; border-color: rgba(0, 217, 255, 0.5); }
+        .sentry { --accent-color: #C8F04E; border-color: rgba(200, 240, 78, 0.5); }
+        .cortex { --accent-color: #9333EA; border-color: rgba(147, 51, 234, 0.8); grid-column: span 2; }
+        .flux { --accent-color: #FF6B9D; border-color: rgba(255, 107, 157, 0.5); }
+        .shelf { --accent-color: #FFD700; border-color: rgba(255, 215, 0, 0.5); }
+        .ledger { --accent-color: #00FF88; border-color: rgba(0, 255, 136, 0.5); }
+
+        .cubicle:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 30px rgba(200, 240, 78, 0.3), inset 0 0 20px var(--accent-color, transparent);
+        }
+
+        /* Character */
+        .character {
+            width: 50px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            position: relative;
+            animation: bob 3s ease-in-out infinite;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .char-head {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), rgba(200, 240, 78, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-bottom: 4px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(200, 240, 78, 0.4);
+        }
+
+        .char-body {
+            width: 24px;
+            height: 20px;
+            background: var(--accent-color);
+            border-radius: 6px 6px 0 0;
+            position: relative;
+        }
+
+        /* Eyes animation */
+        .eyes {
+            position: absolute;
+            top: 8px;
+            width: 20px;
+            display: flex;
+            justify-content: space-between;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .eye {
+            width: 4px;
+            height: 4px;
+            background: #0B0D1A;
+            border-radius: 50%;
+            animation: blink 3s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 10%, 12%, 100% { opacity: 1; }
+            11% { opacity: 0; }
+        }
+
+        /* Agent Name */
+        .agent-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            color: var(--accent-color);
+        }
+
+        .agent-role {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid var(--accent-color);
+            margin-bottom: 8px;
+            z-index: 100;
+        }
+
+        .cubicle:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Animation Containers */
+        .animation-zone {
+            width: 100%;
+            height: 80px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        /* Nova - Typewriter Animation */
+        @keyframes type {
+            0%, 10% { width: 0; }
+            50%, 100% { width: 60px; }
+        }
+
+        @keyframes cursor-blink {
+            0%, 49%, 100% { opacity: 1; }
+            50%, 99% { opacity: 0; }
+        }
+
+        .typewriter {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #FF6B9D;
+            letter-spacing: 2px;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 70px;
+            height: 20px;
+        }
+
+        .typewriter::after {
+            content: '|';
+            animation: cursor-blink 0.7s infinite;
+            color: #FF6B9D;
+        }
+
+        .typed-text {
+            animation: type 4s steps(30) infinite;
+        }
+
+        /* Document Floating */
+        @keyframes float-doc {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .floating-doc {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: white;
+            border: 1px solid #FF6B9D;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            padding: 3px;
+            gap: 2px;
+            top: 10px;
+            animation: float-doc 3s ease-in-out infinite;
+        }
+
+        .floating-doc::before,
+        .floating-doc::after {
+            content: '';
+            flex: 1;
+            background: linear-gradient(90deg, transparent, #FF6B9D);
+            border-radius: 1px;
+        }
+
+        /* Rex - Radar Animation */
+        @keyframes radar-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .radar {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #00D9FF;
+            border-radius: 50%;
+            margin: 15px auto;
+        }
+
+        .radar::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 50%;
+            top: 0;
+            left: 0;
+            box-shadow: inset 0 0 0 6px rgba(11, 13, 26, 0.8);
+        }
+
+        .radar::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background: linear-gradient(180deg, #00D9FF, transparent);
+            top: 0;
+            left: 50%;
+            transform-origin: center bottom;
+            animation: radar-spin 2s linear infinite;
+        }
+
+        .radar-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00D9FF;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .radar-dot:nth-child(2) { top: 15px; left: 30px; animation-delay: 0.3s; }
+        .radar-dot:nth-child(3) { top: 25px; left: 20px; animation-delay: 0.6s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Ace - Phone & Email Popup */
+        @keyframes phone-ring {
+            0%, 100% { transform: rotate(0deg); }
+            5% { transform: rotate(15deg); }
+            10% { transform: rotate(-15deg); }
+            15% { transform: rotate(0deg); }
+        }
+
+        .phone-icon {
+            width: 30px;
+            height: 30px;
+            background: #FFD700;
+            border-radius: 8px;
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            animation: phone-ring 2s ease-in-out 0.5s infinite;
+        }
+
+        @keyframes email-popup {
+            0% { opacity: 0; transform: translateY(20px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .email-icon {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            width: 28px;
+            height: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 2px;
+            animation: email-popup 3s ease-in-out 1s infinite;
+        }
+
+        /* Dash - Chart Animation */
+        .chart-container {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        @keyframes chart-grow {
+            0% { height: 10px; }
+            50% { height: 50px; }
+            100% { height: 10px; }
+        }
+
+        .chart-bar {
+            width: 12px;
+            background: linear-gradient(180deg, var(--accent-color), rgba(200, 240, 78, 0.5));
+            border-radius: 2px;
+            animation: chart-grow 2s ease-in-out infinite;
+        }
+
+        .chart-bar:nth-child(1) { animation-delay: 0s; }
+        .chart-bar:nth-child(2) { animation-delay: 0.3s; }
+        .chart-bar:nth-child(3) { animation-delay: 0.6s; }
+        .chart-bar:nth-child(4) { animation-delay: 0.9s; }
+
+        /* Pixel - Code Scroll */
+        .code-block {
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            color: var(--accent-color);
+        }
+
+        @keyframes code-scroll {
+            0% { transform: translateY(50px); }
+            100% { transform: translateY(-50px); }
+        }
+
+        .code-text {
+            animation: code-scroll 4s linear infinite;
+            white-space: nowrap;
+        }
+
+        /* Prism - Paint Splatter */
+        @keyframes splatter {
+            0% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1) rotate(360deg); }
+        }
+
+        .splatter {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            animation: splatter 2s ease-out infinite;
+        }
+
+        .splatter:nth-child(1) { background: #FF1493; left: 20%; top: 20%; animation-delay: 0s; }
+        .splatter:nth-child(2) { background: #00D9FF; left: 60%; top: 25%; animation-delay: 0.4s; }
+        .splatter:nth-child(3) { background: #FFD700; left: 40%; top: 60%; animation-delay: 0.8s; }
+
+        /* Echo - Social Icons */
+        .social-icons {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        @keyframes float-up {
+            0% { opacity: 0; transform: translateY(20px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            animation: float-up 2.5s ease-in-out infinite;
+            background: rgba(0, 217, 255, 0.3);
+            border: 1px solid #00D9FF;
+        }
+
+        .social-icon:nth-child(1) { animation-delay: 0s; background: linear-gradient(135deg, #0077B5, #0077B5); }
+        .social-icon:nth-child(2) { animation-delay: 0.3s; background: linear-gradient(135deg, #FF1493, #FF1493); }
+        .social-icon:nth-child(3) { animation-delay: 0.6s; background: linear-gradient(135deg, #E1306C, #E1306C); }
+        .social-icon:nth-child(4) { animation-delay: 0.9s; background: linear-gradient(135deg, #000000, #000000); }
+
+        /* Sentry - Checkmark */
+        @keyframes stamp-bounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .stamp {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #C8F04E;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #C8F04E;
+            animation: stamp-bounce 1.5s ease-in-out infinite;
+            left: 50%;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        /* Cortex - Neural Network */
+        @keyframes pulse-node {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .neural-network {
+            width: 120px;
+            height: 80px;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #9333EA;
+            border-radius: 50%;
+            animation: pulse-node 2s ease-in-out infinite;
+            box-shadow: 0 0 10px #9333EA;
+        }
+
+        .neural-node:nth-child(1) { top: 10px; left: 10px; }
+        .neural-node:nth-child(2) { top: 10px; left: 50%; animation-delay: 0.3s; }
+        .neural-node:nth-child(3) { top: 10px; right: 10px; animation-delay: 0.6s; }
+        .neural-node:nth-child(4) { top: 50%; left: 50%; animation-delay: 0.9s; }
+        .neural-node:nth-child(5) { bottom: 10px; left: 20%; animation-delay: 0.4s; }
+        .neural-node:nth-child(6) { bottom: 10px; right: 20%; animation-delay: 0.7s; }
+
+        .neural-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #9333EA, transparent);
+            animation: flow 2s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Flux - Server Racks */
+        .server-rack {
+            width: 50px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 15px auto;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        .server-light {
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, transparent, #FF6B9D, transparent);
+            border-radius: 2px;
+            animation: blink-light 0.8s ease-in-out infinite;
+        }
+
+        .server-light:nth-child(1) { animation-delay: 0s; }
+        .server-light:nth-child(2) { animation-delay: 0.2s; }
+        .server-light:nth-child(3) { animation-delay: 0.4s; }
+        .server-light:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes blink-light {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Shelf - Coins */
+        @keyframes coin-spin {
+            0% { transform: rotateY(0deg) translateY(0); }
+            50% { transform: rotateY(180deg) translateY(-10px); }
+            100% { transform: rotateY(360deg) translateY(0); }
+        }
+
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+            border-radius: 50%;
+            animation: coin-spin 2s ease-in-out infinite;
+        }
+
+        .coin:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .coin:nth-child(2) { left: 50%; animation-delay: 0.4s; }
+        .coin:nth-child(3) { right: 20%; animation-delay: 0.8s; }
+
+        /* Ledger - Spreadsheet */
+        .spreadsheet {
+            width: 60px;
+            height: 40px;
+            border: 1px solid #00FF88;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            padding: 3px;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .cell {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            font-size: 8px;
+            color: #00FF88;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: cell-update 2s ease-in-out infinite;
+        }
+
+        @keyframes cell-update {
+            0%, 100% { background: rgba(0, 255, 136, 0.1); }
+            50% { background: rgba(0, 255, 136, 0.3); }
+        }
+
+        /* Pipeline connections */
+        .pipeline {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .office-grid {
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .cubicle {
+                padding: 15px;
+                min-height: 160px;
+            }
+
+            .header-title {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .office-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: auto;
+                gap: 10px;
+            }
+
+            .cortex {
+                grid-column: span 2;
+            }
+
+            .header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stats-bar {
+                gap: 20px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">SMVP Auto-Office HQ</div>
+        <div class="header-time" id="clock">00:00:00</div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-label">Agents Online</span>
+            <span class="stat-value" id="agents-online">12</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Tasks Active</span>
+            <span class="stat-value" id="tasks-active">48</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Revenue Pipeline</span>
+            <span class="stat-value" id="revenue-pipeline">$247.5K</span>
+        </div>
+    </div>
+
+    <div class="office-container">
+        <div class="office-grid">
+            <!-- Row 1: Front Office -->
+            <!-- Nova - Content Writer -->
+            <div class="cubicle nova">
+                <div class="tooltip">Nova • Content Writer • Drafting blog post</div>
+                <div class="animation-zone">
+                    <div class="floating-doc" style="left: 10%;"></div>
+                    <div class="floating-doc" style="right: 10%; animation-delay: 1s;"></div>
+                    <div class="typewriter">
+                        <span class="typed-text">WRITE...</span>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Nova</div>
+                <div class="agent-role">Content Writer</div>
+            </div>
+
+            <!-- Rex - Lead Hunter -->
+            <div class="cubicle rex">
+                <div class="tooltip">Rex • Lead Hunter • Scanning for leads</div>
+                <div class="animation-zone">
+                    <div class="radar">
+                        <div class="radar-dot"></div>
+                        <div class="radar-dot"></div>
+                        <div class="radar-dot"></div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Rex</div>
+                <div class="agent-role">Lead Hunter</div>
+            </div>
+
+            <!-- Ace - Sales Closer -->
+            <div class="cubicle ace">
+                <div class="tooltip">Ace • Sales Closer • Closing deals</div>
+                <div class="animation-zone">
+                    <div class="phone-icon"></div>
+                    <div class="email-icon"></div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Ace</div>
+                <div class="agent-role">Sales Closer</div>
+            </div>
+
+            <!-- Dash - Analytics -->
+            <div class="cubicle dash">
+                <div class="tooltip">Dash • Analytics • Analyzing metrics</div>
+                <div class="animation-zone">
+                    <div class="chart-container">
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Dash</div>
+                <div class="agent-role">Analytics</div>
+            </div>
+
+            <!-- Row 2: Back Office -->
+            <!-- Pixel - Web Designer -->
+            <div class="cubicle pixel">
+                <div class="tooltip">Pixel • Web Designer • Building website</div>
+                <div class="animation-zone">
+                    <div class="code-block">
+                        <div class="code-text">{ color: #C8F04E } { display: flex }</div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Pixel</div>
+                <div class="agent-role">Web Designer</div>
+            </div>
+
+            <!-- Prism - Creative Producer -->
+            <div class="cubicle prism">
+                <div class="tooltip">Prism • Creative Producer • Creating content</div>
+                <div class="animation-zone">
+                    <div class="splatter"></div>
+                    <div class="splatter"></div>
+                    <div class="splatter"></div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Prism</div>
+                <div class="agent-role">Creative Producer</div>
+            </div>
+
+            <!-- Echo - Social Media -->
+            <div class="cubicle echo">
+                <div class="tooltip">Echo • Social Media • Posting updates</div>
+                <div class="animation-zone">
+                    <div class="social-icons">
+                        <div class="social-icon">in</div>
+                        <div class="social-icon">tt</div>
+                        <div class="social-icon">ig</div>
+                        <div class="social-icon">X</div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Echo</div>
+                <div class="agent-role">Social Media</div>
+            </div>
+
+            <!-- Sentry - QA/Compliance -->
+            <div class="cubicle sentry">
+                <div class="tooltip">Sentry • QA/Compliance • Verifying quality</div>
+                <div class="animation-zone">
+                    <div class="stamp">✓</div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                   </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Sentry</div>
+                <div class="agent-role">QA/Compliance</div>
+            </div>
+
+            <!-- Row 3: Infrastructure -->
+            <!-- Cortex - Orchestrator (2x cell) -->
+            <div class="cubicle cortex">
+                <div class="tooltip">Cortex • Orchestrator • Routing workflows</div>
+                <div class="animation-zone" style="width: 100%; height: 100px;">
+                    <div class="neural-network">
+                        <div class="neural-node"></div>
+                        <div class="neural-node"></div>
+                        <div class="neural-node"></div>
+                        <div class="neural-node"></div>
+                        <div class="neural-node"></div>
+                        <div class="neural-node"></div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Cortex</div>
+                <div class="agent-role">Orchestrator</div>
+            </div>
+
+            <!-- Flux - DevOps -->
+            <div class="cubicle flux">
+                <div class="tooltip">Flux • DevOps • Deploying updates</div>
+                <div class="animation-zone">
+                    <div class="server-rack">
+                        <div class="server-light"></div>
+                        <div class="server-light"></div>
+                        <div class="server-light"></div>
+                        <div class="server-light"></div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Flux</div>
+                <div class="agent-role">DevOps</div>
+            </div>
+
+            <!-- Shelf - Store Manager -->
+            <div class="cubicle shelf">
+                <div class="tooltip">Shelf • Store Manager • Managing inventory</div>
+                <div class="animation-zone">
+                    <div class="coin"></div>
+                    <div class="coin"></div>
+                    <div class="coin"></div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Shelf</div>
+                <div class="agent-role">Store Manager</div>
+            </div>
+
+            <!-- Ledger - Finance -->
+            <div class="cubicle ledger">
+                <div class="tooltip">Ledger • Finance • Tracking revenue</div>
+                <div class="animation-zone">
+                    <div class="spreadsheet">
+                        <div class="cell">$</div>
+                        <div class="cell">E</div>
+                        <div class="cell">Y</div>
+                        <div class="cell">P</div>
+                    </div>
+                </div>
+                <div class="character">
+                    <div class="char-head">
+                        <div class="eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                    <div class="char-body"></div>
+                </div>
+                <div class="agent-name">Ledger</div>
+                <div class="agent-role">Finance</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = hours+':'+minutes+':'+seconds;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Animate stats
+        let tasksActive = 48;
+        let revenuePipeline = 247500;
+
+        setInterval(() => {
+            tasksActive = Math.floor(Math.random() * 60) + 30;
+            revenuePipeline = Math.floor(Math.random() * 400000) + 150000;
+
+            document.getElementById('tasks-active').textContent = tasksActive;
+            document.getElementById('revenue-pipeline').textContent =
+                '$' + (revenuePipeline / 1000).toFixed(1) + 'K';
+        }, 5000);
+
+        // Add interactivity
+        document.querySelectorAll('.cubicle').forEach(cubicle => {
+            cubicle.addEventListener('click', function() {
+                const name = this.querySelector('.agent-name').textContent;
+                const role = this.querySelector('.agent-role').textContent;
+                console.log(name + ' (' + role + ') clicked - Ready to accept tasks!');
+            });
+        });
+
+        // Ensure animations loop smoothly
+        window.addEventListener('load', () => {
+            console.log('SMVP Auto-Office HQ loaded and ready!');
+        });
+    </script>
+</body>
+</html>
