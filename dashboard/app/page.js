@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { AGENTS, TIERS } from '../lib/agents'
+import { getPendingApprovals, approveAction, skipAction, getDashboardStats, subscribeToApprovals, getLeads, getPipeline } from '../lib/queries'
 
 /* ============================================
    DEMO DATA — fake activity until Phase 2
@@ -71,7 +72,60 @@ export default function Dashboard() {
   const [agents, setAgents] = useState(() =>
     AGENTS.map(a => ({ ...a, status: DEMO_STATUSES[a.id] || 'idle' }))
   )
+  const [approvals, setApprovals] = useState(DEMO_APPROVALS)
+  const [stats, setStats] = useState({ leads: 0, pendingApprovals: DEMO_APPROVALS.length, revenue: 0, activeDeliverables: 0 })
+  const [liveLeads, setLiveLeads] = useState([])
+  const [livePipeline, setLivePipeline] = useState([])
   const activeCount = agents.filter(a => a.status === 'active').length
+
+  // Fetch real data from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [pending, dashStats, leads, pipeline] = await Promise.all([
+          getPendingApprovals(),
+          getDashboardStats(),
+          getLeads(),
+          getPipeline(),
+        ])
+        if (pending.length > 0) setApprovals(pending.map(a => ({
+          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: 'medium',
+          actionType: a.action_type, description: a.description, payload: a.payload,
+        })))
+        if (dashStats.leads > 0 || dashStats.pendingApprovals > 0 || dashStats.revenue > 0) setStats(dashStats)
+        if (leads.length > 0) setLiveLeads(leads)
+        if (pipeline.length > 0) setLivePipeline(pipeline)
+      } catch (e) {
+        console.error('Failed to load Supabase data:', e)
+      }
+    }
+    loadData()
+
+    // Subscribe to real-time approval changes
+    const channel = subscribeToApprovals(() => {
+      getPendingApprovals().then(pending => {
+        if (pending.length > 0) setApprovals(pending.map(a => ({
+          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: 'medium',
+          actionType: a.action_type, description: a.description, payload: a.payload,
+        })))
+      })
+      getDashboardStats().then(setStats)
+    })
+
+    return () => { channel?.unsubscribe() }
+  }, [])
+
+  async function handleApprove(id) {
+    await approveAction(id)
+    setApprovals(prev => prev.filter(a => a.id !== id))
+    setStats(prev => ({ ...prev, pendingApprovals: Math.max(0, prev.pendingApprovals - 1) }))
+  }
+
+  async function handleSkip(id) {
+    await skipAction(id)
+    setApprovals(prev => prev.filter(a => a.id !== id))
+    setStats(prev => ({ ...prev, pendingApprovals: Math.max(0, prev.pendingApprovals - 1) }))
+  }
 
   return (
     <div>
@@ -96,31 +150,42 @@ export default function Dashboard() {
         </div>
         <div className="stat-card">
           <div className="stat-label">Pending Approvals</div>
-          <div className="stat-value yellow">{DEMO_APPROVALS.length}</div>
-          <div className="stat-change">Needs your review</div>
+          <div className="stat-value yellow">{approvals.length}</div>
+          <div className="stat-change">{approvals.length > 0 ? 'Needs your review' : 'All clear'}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Tasks Today</div>
-          <div className="stat-value green">{DEMO_TASKS.length}</div>
-          <div className="stat-change up">3 completed</div>
+          <div className="stat-label">Leads</div>
+          <div className="stat-value green">{stats.leads || liveLeads.length || DEMO_TASKS.length}</div>
+          <div className="stat-change up">{liveLeads.length > 0 ? `${liveLeads.filter(l => l.status === 'new').length} new` : '3 completed'}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Token Spend</div>
-          <div className="stat-value purple">$4.82</div>
-          <div className="stat-change">Today's cost</div>
+          <div className="stat-label">Revenue</div>
+          <div className="stat-value purple">${stats.revenue > 0 ? stats.revenue.toLocaleString() : '0.00'}</div>
+          <div className="stat-change">{stats.revenue > 0 ? 'Total earned' : 'Phase 2 pending'}</div>
         </div>
       </div>
-      {view === 'metrics' && <MetricsView agents={agents} />}
+      {view === 'metrics' && <MetricsView agents={agents} approvals={approvals} onApprove={handleApprove} onSkip={handleSkip} />}
       {view === 'office' && <OfficeView agents={agents} />}
-      {view === 'pipeline' && <PipelineView />}
+      {view === 'pipeline' && <PipelineView livePipeline={livePipeline} />}
     </div>
   )
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'just now'
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
 }
 
 /* ============================================
    METRICS VIEW
    ============================================ */
-function MetricsView({ agents }) {
+function MetricsView({ agents, approvals = DEMO_APPROVALS, onApprove, onSkip }) {
   const agentMap = {}
   agents.forEach(a => { agentMap[a.id] = a })
   return (
@@ -165,10 +230,15 @@ function MetricsView({ agents }) {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">Approval Queue</h3>
-            <span style={{ fontSize:'12px', color:'var(--accent-yellow)', fontWeight:600 }}>{DEMO_APPROVALS.length} pending</span>
+            <span style={{ fontSize:'12px', color:'var(--accent-yellow)', fontWeight:600 }}>{approvals.length} pending</span>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
-            {DEMO_APPROVALS.map(ap => (
+            {approvals.length === 0 && (
+              <div style={{ padding:'20px', textAlign:'center', color:'var(--text-muted)', fontSize:'13px' }}>
+                No pending approvals — all clear.
+              </div>
+            )}
+            {approvals.map(ap => (
               <div key={ap.id} style={{
                 display:'flex', alignItems:'center', justifyContent:'space-between',
                 padding:'10px 12px', background:'var(--bg-secondary)', borderRadius:'var(--radius-md)',
@@ -180,8 +250,8 @@ function MetricsView({ agents }) {
                 </div>
                 <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
                   <span style={{ fontSize:'10px', color:'var(--text-muted)' }}>{ap.time}</span>
-                  <button style={{ padding:'4px 12px', fontSize:'11px', fontWeight:600, border:'none', borderRadius:'6px', background:'#22C55E', color:'#fff', cursor:'pointer' }}>Approve</button>
-                  <button style={{ padding:'4px 12px', fontSize:'11px', fontWeight:600, border:'1px solid var(--border)', borderRadius:'6px', background:'transparent', color:'var(--text-muted)', cursor:'pointer' }}>Reject</button>
+                  <button onClick={() => onApprove?.(ap.id)} style={{ padding:'4px 12px', fontSize:'11px', fontWeight:600, border:'none', borderRadius:'6px', background:'#22C55E', color:'#fff', cursor:'pointer' }}>Approve</button>
+                  <button onClick={() => onSkip?.(ap.id)} style={{ padding:'4px 12px', fontSize:'11px', fontWeight:600, border:'1px solid var(--border)', borderRadius:'6px', background:'transparent', color:'var(--text-muted)', cursor:'pointer' }}>Skip</button>
                 </div>
               </div>
             ))}
