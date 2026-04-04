@@ -89,8 +89,8 @@ export default function Dashboard() {
           getPipeline(),
         ])
         if (pending.length > 0) setApprovals(pending.map(a => ({
-          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: 'medium',
-          actionType: a.action_type, description: a.description, payload: a.payload,
+          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: a.priority || 'medium',
+          actionType: a.type, description: a.description, payload: a.payload,
         })))
         if (dashStats.leads > 0 || dashStats.pendingApprovals > 0 || dashStats.revenue > 0) setStats(dashStats)
         if (leads.length > 0) setLiveLeads(leads)
@@ -105,8 +105,8 @@ export default function Dashboard() {
     const channel = subscribeToApprovals(() => {
       getPendingApprovals().then(pending => {
         if (pending.length > 0) setApprovals(pending.map(a => ({
-          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: 'medium',
-          actionType: a.action_type, description: a.description, payload: a.payload,
+          id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: a.priority || 'medium',
+          actionType: a.type, description: a.description, payload: a.payload,
         })))
       })
       getDashboardStats().then(setStats)
