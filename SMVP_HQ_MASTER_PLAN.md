@@ -1,7 +1,7 @@
 # SMVP Auto-Office HQ — Master Plan
 
 **Owner:** Sarthak Varma, CEO — MVP Solutions LLC
-**System:** AI-powered business operating system with 12+ autonomous agents
+**System:** AI-powered business operating system with 13 autonomous agents
 **Stack:** Next.js (App Router) + Supabase + Vercel + Claude API
 **Principle:** CEO retains full control. Autonomy is a slider, not a switch.
 
@@ -29,9 +29,9 @@ This is NOT just a sales tool. It covers the complete business lifecycle:
 
 ```
 PROSPECT → QUALIFY → CLOSE → ONBOARD → DELIVER → RETAIN → GROW
-   Rex       Rex      Ace     Cortex    Pixel     Echo    Rex
-                              + Nova    + Prism   + Dash
-                                        + Flux
+   Rex       Rex      Ace     Atlas     Pixel     Echo    Rex
+                              + Cortex  + Prism   + Atlas + Dash
+                              + Nova    + Flux
 ```
 
 **Revenue Streams:**
@@ -59,6 +59,7 @@ PROSPECT → QUALIFY → CLOSE → ONBOARD → DELIVER → RETAIN → GROW
 | Ace | Sales Closer & Client Relations | Medium | Draft outreach, Sarthak approves sends |
 | Nova | Content Writer & Copywriter | Medium | Drafts content, Sentry reviews, Sarthak approves |
 | Dash | Analytics & Reporting | Medium | Read-only analytics, reports auto-generated |
+| Atlas | Account Manager | Medium | Drafts contracts/invoices, Sarthak approves sends |
 
 ### Tier 2: Back Office (Production)
 | Agent | Role | Office Size | Authority |
@@ -79,7 +80,6 @@ PROSPECT → QUALIFY → CLOSE → ONBOARD → DELIVER → RETAIN → GROW
 ### Future Agents (Phase 3+)
 | Agent | Role | Trigger to Add |
 |-------|------|----------------|
-| Atlas | Client Manager | When active clients > 3 |
 | Forge | Project Manager | When concurrent projects > 5 |
 | Relay | Delivery Manager | When quality issues > threshold |
 | Sage | Consultant (vertical-specific) | When consulting revenue > $5K/mo |
@@ -262,31 +262,38 @@ When Sarthak changes one agent's plan:
 ### Phase 1: Foundation (Current — April 2026)
 **Goal:** Working dashboard with agent visibility and basic controls
 
-- [x] Agent system prompts (all 12 written)
+- [x] Agent system prompts (all 13 written — including Atlas)
 - [x] GitHub repo with all agent files
 - [x] Basic office visualization (v2 pipeline, v3 cubicles)
 - [x] Vercel deployment
-- [ ] **Next.js dashboard rebuild:**
-  - Collapsible sidebar navigation (BD Hub pattern)
-  - Dashboard home with view switcher (Office / Pipeline / Metrics)
-  - Individual agent pages (status, controls, task queue)
-  - Global controls (Abort All, Pause All, Approval Queue)
-  - Clean white/offwhite theme with blue/yellow accents
-  - Theme switcher
-- [ ] Supabase tables: agents, tasks, task_queue, approvals, activity_log
-- [ ] Basic CRUD: create tasks, assign to agents, approve/reject outputs
+- [x] **Next.js dashboard rebuild:**
+  - [x] Collapsible sidebar navigation (BD Hub pattern)
+  - [x] Dashboard home with view switcher (Office / Pipeline / Metrics)
+  - [x] Individual agent pages (status, controls, task queue, activity log)
+  - [x] Global controls (Abort All, Pause All, Approval Queue)
+  - [x] Clean white/offwhite theme with blue/yellow accents
+  - [x] All 14 routes: Dashboard, Agents, Agent Detail, Clients, Pipeline, Projects, Content, Stores, Streams, Finance, Settings, Command, Playbook
+  - [x] Revenue bar charts on Dashboard + Finance page
+  - [x] Form inputs with CSS styling
+  - [x] Loading skeleton CSS animations
+  - [x] Theme switcher (dark mode with localStorage persistence)
+- [x] Supabase query layer: leads, pipeline, deliverables, revenue, approval_queue, tasks, activity_log
+- [x] Real-time subscriptions (Supabase postgres_changes)
+- [x] Demo mode (app runs without Supabase keys with fallback data)
+- [x] Full CRUD: create/edit/delete leads, tasks, pipeline deals, approve/reject
+- [x] Supabase table creation SQL (schema + RLS policies + indexes + triggers)
 
 ### Phase 2: Agent Runtime (May-June 2026)
 **Goal:** Agents actually execute tasks with human-in-the-loop
 
 - [ ] Claude API integration for agent execution
 - [ ] Task execution engine: agent picks up task → executes → submits for review
-- [ ] Approval workflow: pending → approved/rejected → executed/revised
-- [ ] Real-time activity feed (WebSocket or Supabase realtime)
-- [ ] Autonomy slider: per-agent, per-task-type auto-approve rules
+- [x] Approval workflow UI: pending → approved/rejected (approve/skip actions wired)
+- [x] Real-time activity feed (Supabase realtime subscriptions on all key tables)
+- [x] Autonomy slider: per-agent slider on detail page + settings page
 - [ ] Override cascade system (change one plan → all agents adapt)
-- [ ] Office floorplan visualization with agent movement
-- [ ] Conference room handoff animations
+- [x] Office floorplan visualization with agent movement (animated, interactive SVG)
+- [x] Conference room + agent room interactions (click agents, view tasks)
 
 ### Phase 3: Full Operations (July-September 2026)
 **Goal:** End-to-end business operations running through the system
@@ -303,7 +310,7 @@ When Sarthak changes one agent's plan:
 ### Phase 4: Scale & Autonomy (Q4 2026+)
 **Goal:** Increase autonomy as trust builds, add specialized agents
 
-- [ ] New agents: Atlas (Client Manager), Forge (Project Manager)
+- [ ] New agents: Forge (Project Manager)
 - [ ] Multi-project management (concurrent client engagements)
 - [ ] Consultant agents for vertical specialization
 - [ ] Automated scaling: system recommends when to add agents

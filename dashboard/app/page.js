@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { AGENTS, TIERS } from '../lib/agents'
-import { getPendingApprovals, approveAction, skipAction, getDashboardStats, subscribeToApprovals, getLeads, getPipeline } from '../lib/queries'
+import { getPendingApprovals, approveAction, skipAction, getDashboardStats, subscribeToApprovals, getLeads, getPipeline, getRevenue } from '../lib/queries'
 
 /* ============================================
    DEMO DATA — fake activity until Phase 2
@@ -43,7 +43,7 @@ const DEMO_ACTIVITY = [
 const DEMO_STATUSES = {
   rex: 'active', ace: 'active', nova: 'active', dash: 'active',
   pixel: 'active', prism: 'active', echo: 'active', sentry: 'active',
-  shelf: 'idle', cortex: 'active', flux: 'idle', ledger: 'idle',
+  atlas: 'idle', shelf: 'idle', cortex: 'active', flux: 'idle', ledger: 'idle',
 }
 
 const DEMO_CURRENT = {
@@ -55,6 +55,7 @@ const DEMO_CURRENT = {
   prism: 'Rendering product mockups...',
   echo: 'Scheduling social posts...',
   sentry: 'Reviewing landing page...',
+  atlas: 'Reviewing client contracts...',
   shelf: 'Taking a break',
   cortex: 'Coordinating Rex to Ace handoff...',
   flux: 'Monitoring servers...',
@@ -76,17 +77,20 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ leads: 0, pendingApprovals: DEMO_APPROVALS.length, revenue: 0, activeDeliverables: 0 })
   const [liveLeads, setLiveLeads] = useState([])
   const [livePipeline, setLivePipeline] = useState([])
+  const [revenueByStream, setRevenueByStream] = useState({})
+  const [loading, setLoading] = useState(true)
   const activeCount = agents.filter(a => a.status === 'active').length
 
   // Fetch real data from Supabase
   useEffect(() => {
     async function loadData() {
       try {
-        const [pending, dashStats, leads, pipeline] = await Promise.all([
+        const [pending, dashStats, leads, pipeline, revenueData] = await Promise.all([
           getPendingApprovals(),
           getDashboardStats(),
           getLeads(),
           getPipeline(),
+          getRevenue(),
         ])
         if (pending.length > 0) setApprovals(pending.map(a => ({
           id: a.id, agent: a.agent, action: a.title || a.description, time: timeAgo(a.created_at), priority: a.priority || 'medium',
@@ -95,9 +99,18 @@ export default function Dashboard() {
         if (dashStats.leads > 0 || dashStats.pendingApprovals > 0 || dashStats.revenue > 0) setStats(dashStats)
         if (leads.length > 0) setLiveLeads(leads)
         if (pipeline.length > 0) setLivePipeline(pipeline)
+        if (revenueData.length > 0) {
+          const byStream = {}
+          revenueData.forEach(r => {
+            const src = r.source || 'direct'
+            byStream[src] = (byStream[src] || 0) + (parseFloat(r.amount) || 0)
+          })
+          setRevenueByStream(byStream)
+        }
       } catch (e) {
         console.error('Failed to load Supabase data:', e)
       }
+      setLoading(false)
     }
     loadData()
 
@@ -164,7 +177,7 @@ export default function Dashboard() {
           <div className="stat-change">{stats.revenue > 0 ? 'Total earned' : 'Phase 2 pending'}</div>
         </div>
       </div>
-      {view === 'metrics' && <MetricsView agents={agents} approvals={approvals} onApprove={handleApprove} onSkip={handleSkip} />}
+      {view === 'metrics' && <MetricsView agents={agents} approvals={approvals} onApprove={handleApprove} onSkip={handleSkip} revenueByStream={revenueByStream} loading={loading} />}
       {view === 'office' && <OfficeView agents={agents} />}
       {view === 'pipeline' && <PipelineView livePipeline={livePipeline} />}
     </div>
@@ -185,7 +198,7 @@ function timeAgo(dateStr) {
 /* ============================================
    METRICS VIEW
    ============================================ */
-function MetricsView({ agents, approvals = DEMO_APPROVALS, onApprove, onSkip }) {
+function MetricsView({ agents, approvals = DEMO_APPROVALS, onApprove, onSkip, revenueByStream = {}, loading = false }) {
   const agentMap = {}
   agents.forEach(a => { agentMap[a.id] = a })
   return (
@@ -280,6 +293,66 @@ function MetricsView({ agents, approvals = DEMO_APPROVALS, onApprove, onSkip }) 
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Revenue Chart */}
+      <div className="card" style={{ marginTop: '8px' }}>
+        <div className="card-header">
+          <h3 className="card-title">Revenue by Stream</h3>
+          <a href="/finance" style={{ fontSize: '12px', color: 'var(--accent-blue)', textDecoration: 'none' }}>View All →</a>
+        </div>
+        {(() => {
+          const STREAM_INFO = {
+            'web-design': { name: 'Web Design', color: '#2563EB', icon: '🌐' },
+            'etsy-digital': { name: 'Etsy Digital', color: '#22C55E', icon: '📦' },
+            'canva': { name: 'Canva', color: '#EC4899', icon: '🎨' },
+            'etsy-physical': { name: 'Etsy Physical', color: '#F59E0B', icon: '👕' },
+            'tiktok': { name: 'TikTok', color: '#7C3AED', icon: '📱' },
+            'direct': { name: 'Direct', color: '#06B6D4', icon: '💰' },
+          }
+          const entries = Object.entries(revenueByStream).sort((a, b) => b[1] - a[1])
+          const maxVal = entries.length > 0 ? Math.max(...entries.map(e => e[1])) : 0
+
+          if (entries.length === 0) return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {['web-design', 'etsy-digital', 'canva'].map(key => {
+                const info = STREAM_INFO[key]
+                return (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '16px', width: '24px' }}>{info.icon}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, width: '100px' }}>{info.name}</span>
+                    <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                      <div style={{ height: '100%', width: '0%', background: info.color, borderRadius: '4px', transition: 'width 0.5s ease' }}></div>
+                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', width: '60px', textAlign: 'right' }}>$0</span>
+                  </div>
+                )
+              })}
+              <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Close your first deal to see revenue flow in
+              </div>
+            </div>
+          )
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {entries.map(([stream, amount]) => {
+                const info = STREAM_INFO[stream] || { name: stream, color: '#94A3B8', icon: '💵' }
+                const pct = maxVal > 0 ? (amount / maxVal) * 100 : 0
+                return (
+                  <div key={stream} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '16px', width: '24px' }}>{info.icon}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, width: '100px' }}>{info.name}</span>
+                    <div style={{ flex: 1, height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.max(pct, 2)}%`, background: info.color, borderRadius: '4px', transition: 'width 0.5s ease' }}></div>
+                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: info.color, width: '60px', textAlign: 'right' }}>${amount.toLocaleString()}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

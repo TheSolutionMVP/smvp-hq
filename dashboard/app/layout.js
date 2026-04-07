@@ -1,6 +1,6 @@
 'use client'
 import './globals.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AGENTS, TIERS } from '../lib/agents'
 
 const NAV_ITEMS = [
@@ -18,6 +18,22 @@ export default function RootLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const [activeSubmenu, setActiveSubmenu] = useState(null)
   const [pendingApprovals] = useState(0)
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('smvp-theme')
+    if (saved) {
+      setTheme(saved)
+      document.documentElement.setAttribute('data-theme', saved)
+    }
+  }, [])
+
+  function toggleTheme() {
+    const next = theme === 'light' ? 'dark' : 'light'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('smvp-theme', next)
+  }
 
   function handleNavClick(item) {
     if (item.hasSubmenu) {
@@ -112,6 +128,9 @@ export default function RootLayout({ children }) {
               <span className="topbar-title">Auto-Office Command Center</span>
             </div>
             <div className="topbar-right">
+              <button className="theme-toggle" onClick={toggleTheme} title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
+                {theme === 'light' ? '◑' : '◐'}
+              </button>
               <div className="approval-badge">
                 Approvals <span className="approval-count">{pendingApprovals}</span>
               </div>

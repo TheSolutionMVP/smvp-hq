@@ -56,6 +56,10 @@ const SECTIONS = [
         heading: 'Dash — Analytics & Growth 📈',
         text: 'USE WHEN: You need the big picture. Weekly reports, revenue breakdowns, stream activation recommendations, growth analysis. OUTPUT: Insights and action items. HANDOFF: Routes recommendations to the correct agent.',
       },
+      {
+        heading: 'Atlas — Account Manager 📋',
+        text: 'USE WHEN: A deal closes and a client needs onboarding. Atlas drafts contracts, creates invoices, manages billing, schedules check-ins, and monitors client satisfaction. OUTPUT: Contracts, invoices, onboarding checklists, client health reports. HANDOFF: Ace closes deal → Atlas onboards → Pixel/Flux deliver.',
+      },
     ],
   },
   {

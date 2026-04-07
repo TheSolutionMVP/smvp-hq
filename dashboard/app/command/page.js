@@ -8,6 +8,7 @@ const QUICK_COMMANDS = [
   { label: 'Activate Nova', desc: 'Write listings or marketing copy', agent: 'nova', icon: '✍️' },
   { label: 'Run Weekly Report', desc: 'Dash pulls all data and emails brief', agent: 'dash', icon: '📈' },
   { label: 'Deploy to Vercel', desc: 'Flux pushes latest code live', agent: 'flux', icon: '⚙️' },
+  { label: 'Activate Atlas', desc: 'Draft contract or invoice for a client', agent: 'atlas', icon: '📋' },
 ]
 
 const RECENT_COMMANDS = []

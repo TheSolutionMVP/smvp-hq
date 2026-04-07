@@ -1,4 +1,4 @@
-// All 12 SMVP HQ Agents — single source of truth
+// All 13 SMVP HQ Agents — single source of truth
 export const AGENTS = [
   // Tier 1: Front Office (Client-Facing)
   {
@@ -48,6 +48,19 @@ export const AGENTS = [
     autonomy: 60,
     description: 'Tracks KPIs, generates reports, monitors performance across all agents.',
     taskLimit: 5,
+  },
+
+  {
+    id: 'atlas',
+    name: 'Atlas',
+    role: 'Account Manager',
+    tier: 'front-office',
+    emoji: '\u{1F4CB}',
+    color: '#D97706',
+    status: 'idle',
+    autonomy: 20,
+    description: 'Manages contracts, billing, client onboarding, and relationship health.',
+    taskLimit: 4,
   },
 
   // Tier 2: Back Office (Production)

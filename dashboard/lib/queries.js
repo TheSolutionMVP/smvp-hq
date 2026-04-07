@@ -146,6 +146,32 @@ export async function skipAction(id) {
   return data?.[0] || null
 }
 
+// ─── Leads (CRUD) ───────────────────────────────────────
+export async function updateLead(id, updates) {
+  const { data, error } = await supabase
+    .from('leads')
+    .update(updates)
+    .eq('id', id)
+    .select()
+  if (error) console.error('updateLead error:', error)
+  return { data: data?.[0] || null, error }
+}
+
+export async function deleteLead(id) {
+  const { error } = await supabase.from('leads').delete().eq('id', id)
+  if (error) console.error('deleteLead error:', error)
+  return { error }
+}
+
+export async function createLead(lead) {
+  const { data, error } = await supabase
+    .from('leads')
+    .insert(lead)
+    .select()
+  if (error) console.error('createLead error:', error)
+  return { data: data?.[0] || null, error }
+}
+
 // ─── Tasks ───────────────────────────────────────────────
 export async function getTasks() {
   const { data, error } = await supabase
@@ -154,6 +180,62 @@ export async function getTasks() {
     .order('created_at', { ascending: false })
   if (error) console.error('getTasks error:', error)
   return data || []
+}
+
+export async function getTasksByAgent(agentId) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false })
+  if (error) console.error('getTasksByAgent error:', error)
+  return data || []
+}
+
+export async function createTask(task) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert(task)
+    .select()
+  if (error) console.error('createTask error:', error)
+  return { data: data?.[0] || null, error }
+}
+
+export async function deleteTask(id) {
+  const { error } = await supabase.from('tasks').delete().eq('id', id)
+  if (error) console.error('deleteTask error:', error)
+  return { error }
+}
+
+export async function updateTaskStatus(id, status) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ status })
+    .eq('id', id)
+    .select()
+  if (error) console.error('updateTaskStatus error:', error)
+  return { data: data?.[0] || null, error }
+}
+
+// ─── Activity Log ────────────────────────────────────────
+export async function getActivityByAgent(agentId) {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (error) console.error('getActivityByAgent error:', error)
+  return data || []
+}
+
+export async function logActivity(entry) {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .insert(entry)
+    .select()
+  if (error) console.error('logActivity error:', error)
+  return { data: data?.[0] || null, error }
 }
 
 // ─── Realtime subscriptions ──────────────────────────────

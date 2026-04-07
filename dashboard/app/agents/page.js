@@ -7,7 +7,7 @@ export default function AgentsPage() {
       <div className="page-header">
         <div className="page-header-left">
           <h1 className="page-title">Agents</h1>
-          <p className="page-subtitle">12 agents across 3 tiers — click any agent to manage</p>
+          <p className="page-subtitle">13 agents across 3 tiers — click any agent to manage</p>
         </div>
       </div>
 
