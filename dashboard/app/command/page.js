@@ -4,8 +4,10 @@ import { useState } from 'react'
 const QUICK_COMMANDS = [
   { label: 'Activate Rex', desc: 'Start a lead generation sweep', agent: 'rex', icon: '🔍' },
   { label: 'Activate Ace', desc: 'Draft outreach for top leads', agent: 'ace', icon: '🤝' },
+  { label: 'Activate Atlas', desc: 'Check client status & send invoices', agent: 'atlas', icon: '📋' },
   { label: 'Activate Pixel', desc: 'Build a demo site or product', agent: 'pixel', icon: '🎨' },
   { label: 'Activate Nova', desc: 'Write listings or marketing copy', agent: 'nova', icon: '✍️' },
+  { label: 'Bill Raineri', desc: 'Atlas generates & sends Raineri invoice', agent: 'atlas', icon: '💰' },
   { label: 'Run Weekly Report', desc: 'Dash pulls all data and emails brief', agent: 'dash', icon: '📈' },
   { label: 'Deploy to Vercel', desc: 'Flux pushes latest code live', agent: 'flux', icon: '⚙️' },
   { label: 'Activate Atlas', desc: 'Draft contract or invoice for a client', agent: 'atlas', icon: '📋' },

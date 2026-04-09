@@ -8,6 +8,11 @@ const STAGE_COLORS = {
   proposal: 'badge-contacted',
   negotiating: 'badge-qualified',
   closed: 'badge-closed',
+  onboarding: 'badge-new',
+  'in-progress': 'badge-contacted',
+  billing: 'badge-qualified',
+  paid: 'badge-closed',
+  overdue: 'badge-responded',
 }
 
 const EMPTY_DEAL = { stage: 'outreach', stream: 'web-design', deal_value: '', last_action: '', next_action: '' }

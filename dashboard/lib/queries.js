@@ -238,6 +238,46 @@ export async function logActivity(entry) {
   return { data: data?.[0] || null, error }
 }
 
+// ─── Invoices ───────────────────────────────────────────
+export async function getInvoices() {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) console.error('getInvoices error:', error)
+  return data || []
+}
+
+export async function getInvoicesByStatus(status) {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+  if (error) console.error('getInvoicesByStatus error:', error)
+  return data || []
+}
+
+export async function getInvoicesByClient(clientName) {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('client_name', clientName)
+    .order('created_at', { ascending: false })
+  if (error) console.error('getInvoicesByClient error:', error)
+  return data || []
+}
+
+export async function markInvoicePaid(id) {
+  const { data, error } = await supabase
+    .from('invoices')
+    .update({ status: 'paid', paid_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+  if (error) console.error('markInvoicePaid error:', error)
+  return data?.[0] || null
+}
+
 // ─── Realtime subscriptions ──────────────────────────────
 export function subscribeToApprovals(callback) {
   return supabase

@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
         <meta name="description" content="The Solution MVP operations dashboard" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
         <div className={`app-container ${collapsed ? 'collapsed' : ''}`}>
@@ -93,6 +93,20 @@ export default function RootLayout({ children }) {
                   <span className="user-name">Sarthak Varma</span>
                   <span className="user-role">CEO</span>
                 </div>
+                <button
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' })
+                    window.location.href = '/login'
+                  }}
+                  style={{
+                    background: 'none', border: 'none', color: 'var(--text-muted)',
+                    cursor: 'pointer', fontSize: '12px', padding: '4px 8px',
+                    borderRadius: '4px', marginLeft: 'auto',
+                  }}
+                  title="Sign out"
+                >
+                  ↪ Out
+                </button>
               </div>
             </div>
           </nav>

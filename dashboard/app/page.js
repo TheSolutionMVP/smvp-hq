@@ -19,6 +19,7 @@ const DEMO_TASKS = [
   { id: 10, agent: 'prism', title: 'Create product mockup renders', stage: 'Proposal', progress: 65, priority: 'medium' },
   { id: 11, agent: 'sentry', title: 'QA review: landing page copy', stage: 'Closing', progress: 80, priority: 'high' },
   { id: 12, agent: 'shelf', title: 'Update Etsy holiday listings', stage: 'Delivery', progress: 50, priority: 'low' },
+  { id: 13, agent: 'atlas', title: 'Invoice Raineri Jewelers — $1,000', stage: 'Closing', progress: 60, priority: 'high' },
 ]
 
 const DEMO_APPROVALS = [
@@ -38,10 +39,11 @@ const DEMO_ACTIVITY = [
   { agent: 'prism', action: 'Rendered 6 product mockup variations', time: '1h ago', type: 'success' },
   { agent: 'ledger', action: 'Monthly P&L summary ready for review', time: '1h ago', type: 'info' },
   { agent: 'shelf', action: 'Updated 23 Etsy listing descriptions', time: '2h ago', type: 'success' },
+  { agent: 'atlas', action: 'Raineri Jewelers invoice queued for approval — $1,000', time: '30m ago', type: 'success' },
 ]
 
 const DEMO_STATUSES = {
-  rex: 'active', ace: 'active', nova: 'active', dash: 'active',
+  rex: 'active', ace: 'active', nova: 'active', dash: 'active', atlas: 'active',
   pixel: 'active', prism: 'active', echo: 'active', sentry: 'active',
   atlas: 'idle', shelf: 'idle', cortex: 'active', flux: 'idle', ledger: 'idle',
 }
@@ -51,6 +53,7 @@ const DEMO_CURRENT = {
   ace: 'Drafting TechCorp follow-up...',
   nova: 'Writing blog post intro...',
   dash: 'Crunching weekly metrics...',
+  atlas: 'Preparing Raineri Jewelers invoice...',
   pixel: 'Designing hero section...',
   prism: 'Rendering product mockups...',
   echo: 'Scheduling social posts...',
@@ -371,6 +374,7 @@ const AGENT_ROOMS = {
   echo:   { desk: [400, 380], spots: [[380, 420], [440, 360], [420, 440]], room: [344, 319, 160, 158] },
   sentry: { desk: [570, 380], spots: [[550, 420], [610, 360], [580, 440]], room: [510, 319, 155, 158] },
   shelf:  { desk: [80, 550], spots: [[60, 590], [120, 530], [100, 610]], room: [12, 483, 160, 165] },
+  atlas:  { desk: [290, 550], spots: [[270, 590], [310, 530], [280, 580]], room: [178, 483, 220, 165] },
   cortex: { desk: [500, 560], spots: [[480, 600], [540, 530], [460, 580]], room: [404, 483, 260, 165] },
   flux:   { desk: [740, 400], spots: [[720, 430], [760, 380], [700, 420]], room: [671, 319, 165, 158] },
   ledger: { desk: [740, 560], spots: [[720, 590], [760, 530], [700, 580]], room: [671, 483, 165, 165] },
@@ -752,15 +756,36 @@ function OfficeView({ agents }) {
           <AnimatedAgent pos={agentPositions.shelf} agent={a.shelf} isHovered={hovered==='shelf'} tick={tick}/>
         </g>
 
-        {/* BREAK ROOM */}
-        <rect x={178} y={483} width={220} height={165} rx={2} fill={F} filter="url(#rs)"/>
-        <text x={288} y={498} textAnchor="middle" style={{fontFamily:'var(--font-heading)',fontWeight:600,fontSize:'8px',fill:'#A0AEC0',letterSpacing:'1px'}}>BREAK ROOM</text>
-        <circle cx={260} cy={565} r={22} fill="#A1887F" stroke="#8D6E63" strokeWidth={1}/><circle cx={260} cy={565} r={18} fill="#BCAAA4" opacity={0.4}/>
-        {[0,90,180,270].map((ang,i) => { const rad=ang*Math.PI/180; return <g key={i}><circle cx={260+32*Math.cos(rad)} cy={565+32*Math.sin(rad)} r={7} fill="#455A64" stroke="#37474F" strokeWidth={0.4}/><circle cx={260+32*Math.cos(rad)} cy={565+32*Math.sin(rad)-0.5} r={5} fill="#607D8B"/></g> })}
-        <rect x={355} y={510} width={18} height={22} rx={3} fill="#455A64" stroke="#37474F" strokeWidth={0.6}/><circle cx={364} cy={526} r={3} fill="#EF5350" opacity={0.6}/>
-        <rect x={190} y={510} width={44} height={18} rx={9} fill="#7B1FA2" stroke="#6A1B9A" strokeWidth={0.5}/>
-        <g><rect x={370} y={610} width={12} height={10} rx={3} fill="#8D6E63"/><ellipse cx={376} cy={604} rx={8} ry={8} fill="#388E3C"/></g>
-        {[200,235,270,305,340].map((wx,i) => <rect key={i} x={wx} y={H-10} width={22} height={4} rx={1} fill="#B3E5FC" opacity={0.6}/>)}
+        {/* ATLAS */}
+        <g className="room-highlight" onClick={() => setSelectedAgent('atlas')}>
+          <rect x={178} y={483} width={220} height={165} rx={2} fill={F} filter="url(#rs)"/>
+          <text x={288} y={498} textAnchor="middle" style={{fontFamily:'var(--font-heading)',fontWeight:600,fontSize:'8px',fill:'#A0AEC0',letterSpacing:'1px'}}>ACCOUNT MANAGEMENT</text>
+          {/* Desk */}
+          <rect x={250} y={520} width={56} height={24} rx={5} fill="#A1887F" stroke="#8D6E63" strokeWidth={0.8}/>
+          <rect x={265} y={523} width={18} height={12} rx={2} fill="#1A1A2E" stroke="#333" strokeWidth={0.5}/><rect x={267} y={525} width={14} height={8} rx={1} fill="#0EA5E9" opacity={0.3} className="screen-glow"/>
+          {/* Chair */}
+          <circle cx={278} cy={556} r={10} fill="#0C4A6E" stroke="#082F49" strokeWidth={0.6}/><circle cx={278} cy={555} r={7} fill="#0369A1"/>
+          <ellipse cx={267} cy={556} rx={2.5} ry={5} fill="#0C4A6E"/><ellipse cx={289} cy={556} rx={2.5} ry={5} fill="#0C4A6E"/>
+          {/* Client board */}
+          <rect x={190} y={500} width={48} height={38} rx={2} fill="#E0F2FE" stroke="#7DD3FC" strokeWidth={0.8}/>
+          <text x={214} y={512} textAnchor="middle" style={{fontSize:'5px',fill:'#0284C7',fontWeight:600}}>CLIENT BOARD</text>
+          <rect x={195} y={516} width={36} height={5} rx={1} fill="#38BDF8" opacity={0.3}/><rect x={195} y={516} width={28} height={5} rx={1} fill="#0EA5E9" opacity={0.3}/>
+          <rect x={195} y={524} width={36} height={5} rx={1} fill="#38BDF8" opacity={0.3}/><rect x={195} y={524} width={16} height={5} rx={1} fill="#22C55E" opacity={0.4}/>
+          {/* Invoice stack */}
+          {[0,1,2].map(i => <rect key={i} x={330+i*3} y={510-i*3} width={30} height={38} rx={2} fill="#FFF" stroke="#E2E8F0" strokeWidth={0.6}/>)}
+          <text x={345} y={525} textAnchor="middle" style={{fontSize:'4.5px',fill:'#64748B'}}>INVOICE</text>
+          <rect x={335} y={530} width={20} height={3} rx={1} fill="#0EA5E9" opacity={0.3}/>
+          <rect x={335} y={535} width={14} height={3} rx={1} fill="#22C55E" opacity={0.4}/>
+          {/* Filing cabinet */}
+          <rect x={370} y={560} width={16} height={30} rx={2} fill="#78909C" stroke="#546E7A" strokeWidth={0.6}/>
+          <rect x={373} y={565} width={10} height={8} rx={1} fill="#90A4AE"/><rect x={373} y={577} width={10} height={8} rx={1} fill="#90A4AE"/>
+          {/* Plant */}
+          <g><rect x={190} y={610} width={12} height={10} rx={3} fill="#8D6E63"/><ellipse cx={196} cy={604} rx={8} ry={8} fill="#388E3C"/></g>
+          {[200,235,270,305,340].map((wx,i) => <rect key={i} x={wx} y={H-10} width={22} height={4} rx={1} fill="#B3E5FC" opacity={0.6}/>)}
+        </g>
+        <g onMouseEnter={()=>setHovered('atlas')} onMouseLeave={()=>setHovered(null)} onClick={()=>setSelectedAgent('atlas')}>
+          <AnimatedAgent pos={agentPositions.atlas} agent={a.atlas} isHovered={hovered==='atlas'} tick={tick}/>
+        </g>
 
         {/* CORTEX */}
         <g className="room-highlight" onClick={() => setSelectedAgent('cortex')}>
