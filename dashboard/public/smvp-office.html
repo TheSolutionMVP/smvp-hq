@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMVP Auto-Office HQ — Agent Operations</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy: #0B0D1A;
+    --navy-light: #12152A;
+    --navy-mid: #1A1E35;
+    --purple: #9333EA;
+    --purple-glow: rgba(147, 51, 234, 0.3);
+    --lime: #C8F04E;
+    --lime-glow: rgba(200, 240, 78, 0.3);
+    --white: #F1F1F1;
+    --gray: #8B8FA3;
+    --green: #22C55E;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --blue: #3B82F6;
+    --pink: #EC4899;
+    --cyan: #06B6D4;
+  }
+
+  body {
+    background: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid rgba(147, 51, 234, 0.15);
+    background: linear-gradient(180deg, rgba(147, 51, 234, 0.06) 0%, transparent 100%);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--purple), var(--lime));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--navy);
+  }
+
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .header-title span {
+    color: var(--lime);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--green);
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  }
+
+  .clock {
+    font-size: 13px;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    background: rgba(147, 51, 234, 0.08);
+    border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .stat-value.purple { color: var(--purple); }
+  .stat-value.lime { color: var(--lime); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+
+  /* ─── OFFICE GRID ─── */
+  .office-container {
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ─── AGENT DESK ─── */
+  .agent-desk {
+    background: var(--navy-light);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .agent-desk:hover {
+    border-color: rgba(147, 51, 234, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .agent-desk::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .agent-desk[data-agent="rex"]::before { background: linear-gradient(90deg, var(--blue), transparent); }
+  .agent-desk[data-agent="pixel"]::before { background: linear-gradient(90deg, var(--pink), transparent); }
+  .agent-desk[data-agent="nova"]::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .agent-desk[data-agent="ace"]::before { background: linear-gradient(90deg, var(--lime), transparent); }
+  .agent-desk[data-agent="flux"]::before { background: linear-gradient(90deg, var(--amber), transparent); }
+  .agent-desk[data-agent="dash"]::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+
+  .desk-header {
+    padding: 16px 18px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .agent-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .agent-avatar .status-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 12px;
+    border: 2px solid;
+    animation: statusPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes statusPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .agent-avatar[data-color="blue"] { background: rgba(59, 130, 246, 0.15); }
+  .agent-avatar[data-color="blue"] .status-ring { border-color: var(--blue); }
+  .agent-avatar[data-color="pink"] { background: rgba(236, 72, 153, 0.15); }
+  .agent-avatar[data-color="pink"] .status-ring { border-color: var(--pink); }
+  .agent-avatar[data-color="purple"] { background: rgba(147, 51, 234, 0.15); }
+  .agent-avatar[data-color="purple"] .status-ring { border-color: var(--purple); }
+  .agent-avatar[data-color="lime"] { background: rgba(200, 240, 78, 0.15); }
+  .agent-avatar[data-color="lime"] .status-ring { border-color: var(--lime); }
+  .agent-avatar[data-color="amber"] { background: rgba(245, 158, 11, 0.15); }
+  .agent-avatar[data-color="amber"] .status-ring { border-color: var(--amber); }
+  .agent-avatar[data-color="cyan"] { background: rgba(6, 182, 212, 0.15); }
+  .agent-avatar[data-color="cyan"] .status-ring { border-color: var(--cyan); }
+
+  .agent-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .agent-role {
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 1px;
+  }
+
+  .agent-status-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .agent-status-badge.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--green);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .agent-status-badge.processing {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--amber);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  /* ─── TASK AREA ─── */
+  .desk-tasks {
+    padding: 14px 18px;
+    min-height: 140px;
+  }
+
+  .current-task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .task-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+    animation: taskBlink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes taskBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .task-indicator.blue { background: var(--blue); }
+  .task-indicator.pink { background: var(--pink); }
+  .task-indicator.purple { background: var(--purple); }
+  .task-indicator.lime { background: var(--lime); }
+  .task-indicator.amber { background: var(--amber); }
+  .task-indicator.cyan { background: var(--cyan); }
+
+  .task-text {
+    font-size: 12px;
+    color: rgba(241, 241, 241, 0.85);
+    line-height: 1.5;
+  }
+
+  .task-text strong {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .typing-indicator {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .typing-indicator span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gray);
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ─── PROGRESS BAR ─── */
+  .task-progress {
+    margin-top: 10px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .progress-label {
+    font-size: 10px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .progress-pct {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ─── DESK FOOTER ─── */
+  .desk-footer {
+    padding: 10px 18px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-stat {
+    font-size: 10px;
+    color: var(--gray);
+  }
+
+  .footer-stat span {
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .handoff-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--purple);
+    opacity: 0;
+    animation: fadeInOut 6s ease-in-out infinite;
+  }
+
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    20%, 80% { opacity: 1; }
+  }
+
+  .handoff-arrow {
+    font-size: 12px;
+  }
+
+  /* ─── ACTIVITY FEED ─── */
+  .activity-section {
+    padding: 0 32px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .activity-header {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .activity-feed {
+    background: var(--navy-light);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 180px;
+  }
+
+  .activity-item {
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    font-size: 12px;
+    animation: slideIn 0.5s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .activity-time {
+    font-variant-numeric: tabular-nums;
+    color: var(--gray);
+    font-size: 10px;
+    min-width: 50px;
+  }
+
+  .activity-agent {
+    font-weight: 700;
+    min-width: 40px;
+  }
+
+  .activity-msg {
+    color: rgba(241, 241, 241, 0.7);
+  }
+
+  .activity-agent.rex { color: var(--blue); }
+  .activity-agent.pixel { color: var(--pink); }
+  .activity-agent.nova { color: var(--purple); }
+  .activity-agent.ace { color: var(--lime); }
+  .activity-agent.flux { color: var(--amber); }
+  .activity-agent.dash { color: var(--cyan); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    .office-container { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .office-container { grid-template-columns: 1fr; padding: 16px; }
+    .header { padding: 16px; }
+    .stats-bar { flex-wrap: wrap; }
+    .stat-item { min-width: 50%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">S</div>
+    <div class="header-title">SMVP <span>Auto-Office</span> HQ</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      All Systems Operational
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-label">Agents Online</div>
+    <div class="stat-value purple" id="agents-online">6 / 6</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Tasks Active</div>
+    <div class="stat-value lime" id="tasks-active">12</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Completed Today</div>
+    <div class="stat-value green" id="completed-today">34</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Revenue Pipeline</div>
+    <div class="stat-value amber">$4,200</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Pending Approvals</div>
+    <div class="stat-value purple">3</div>
+  </div>
+</div>
+
+<div class="office-container" id="office">
+  <!-- REX -->
+  <div class="agent-desk" data-agent="rex">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="blue">
+        🔍
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Rex</h3>
+        <div class="agent-role">Research & Prospecting</div>
+      </div>
+      <div class="agent-status-badge active">Active</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator blue"></div>
+        <div class="task-text">
+          <strong>Scanning Google Maps</strong> for restaurants without websites in Austin, TX
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator blue" style="animation-delay: 0.5s"></div>
+        <div class="task-text">Validating Etsy niche: <strong>"minimalist phone wallpapers"</strong> — checking competition density</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Lead scan progress</span>
+          <span class="progress-pct" style="color: var(--blue)" id="rex-pct">67%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="rex-bar" style="width: 67%; background: var(--blue);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Today: <span>8 leads</span> found</div>
+      <div class="handoff-badge">→ Ace <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+
+  <!-- PIXEL -->
+  <div class="agent-desk" data-agent="pixel">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="pink">
+        🎨
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Pixel</h3>
+        <div class="agent-role">Design & Build</div>
+      </div>
+      <div class="agent-status-badge processing">Building</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator pink"></div>
+        <div class="task-text">
+          <strong>Building client site:</strong> Mario's Italian Kitchen — mobile responsive layout
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator pink" style="animation-delay: 0.7s"></div>
+        <div class="task-text">Designing <strong>3 Canva templates</strong> — "Social Media Bundle for Realtors"</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Site build progress</span>
+          <span class="progress-pct" style="color: var(--pink)" id="pixel-pct">42%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="pixel-bar" style="width: 42%; background: var(--pink);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Active builds: <span>2</span></div>
+      <div class="handoff-badge" style="animation-delay: 2s">→ Flux <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+
+  <!-- NOVA -->
+  <div class="agent-desk" data-agent="nova">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="purple">
+        ✍️
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Nova</h3>
+        <div class="agent-role">Content & Marketing</div>
+      </div>
+      <div class="agent-status-badge active">Writing</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator purple"></div>
+        <div class="task-text">
+          <strong>Drafting TikTok script:</strong> "3 signs your business needs a website in 2026"
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator purple" style="animation-delay: 0.3s"></div>
+        <div class="task-text">Writing <strong>Etsy listing</strong> — SEO titles + 13 tags for wallpaper pack</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Content queue</span>
+          <span class="progress-pct" style="color: var(--purple)" id="nova-pct">78%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="nova-bar" style="width: 78%; background: var(--purple);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Pieces today: <span>6</span></div>
+      <div class="handoff-badge" style="animation-delay: 1s">→ Ace <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+
+  <!-- ACE -->
+  <div class="agent-desk" data-agent="ace">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="lime">
+        💰
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Ace</h3>
+        <div class="agent-role">Sales & Outreach</div>
+      </div>
+      <div class="agent-status-badge active">Closing</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator lime"></div>
+        <div class="task-text">
+          <strong>Drafting cold email</strong> for Bella's Nail Studio — no website, 4.8★ on Google
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator lime" style="animation-delay: 0.6s"></div>
+        <div class="task-text">Follow-up #2 to <strong>Sunrise Yoga</strong> — Day 4 sequence triggered</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Outreach pipeline</span>
+          <span class="progress-pct" style="color: var(--lime)" id="ace-pct">55%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="ace-bar" style="width: 55%; background: var(--lime);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Emails queued: <span>5</span> (awaiting approval)</div>
+      <div class="handoff-badge" style="animation-delay: 3s">→ Pixel <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+
+  <!-- FLUX -->
+  <div class="agent-desk" data-agent="flux">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="amber">
+        ⚙️
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Flux</h3>
+        <div class="agent-role">Operations & Logistics</div>
+      </div>
+      <div class="agent-status-badge active">Syncing</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator amber"></div>
+        <div class="task-text">
+          <strong>Syncing deliverables</strong> — updating Supabase status for 3 active projects
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator amber" style="animation-delay: 0.4s"></div>
+        <div class="task-text">Processing <strong>Etsy order #1847</strong> — marking shipped, updating tracker</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Ops queue</span>
+          <span class="progress-pct" style="color: var(--amber)" id="flux-pct">89%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="flux-bar" style="width: 89%; background: var(--amber);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Ops handled: <span>14</span> today</div>
+      <div class="handoff-badge" style="animation-delay: 4s">→ Dash <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+
+  <!-- DASH -->
+  <div class="agent-desk" data-agent="dash">
+    <div class="desk-header">
+      <div class="agent-avatar" data-color="cyan">
+        📊
+        <div class="status-ring"></div>
+      </div>
+      <div class="agent-info">
+        <h3>Dash</h3>
+        <div class="agent-role">Analytics & Reporting</div>
+      </div>
+      <div class="agent-status-badge processing">Analyzing</div>
+    </div>
+    <div class="desk-tasks">
+      <div class="current-task">
+        <div class="task-indicator cyan"></div>
+        <div class="task-text">
+          <strong>Generating weekly report:</strong> revenue by stream, lead conversion rates
+          <span class="typing-indicator"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="current-task">
+        <div class="task-indicator cyan" style="animation-delay: 0.8s"></div>
+        <div class="task-text">Tracking Etsy shop analytics — <strong>+23% views</strong> this week vs last</div>
+      </div>
+      <div class="task-progress">
+        <div class="progress-header">
+          <span class="progress-label">Report generation</span>
+          <span class="progress-pct" style="color: var(--cyan)" id="dash-pct">31%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="dash-bar" style="width: 31%; background: var(--cyan);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="desk-footer">
+      <div class="footer-stat">Reports today: <span>2</span></div>
+      <div class="handoff-badge" style="animation-delay: 5s">→ Rex <span class="handoff-arrow">⚡</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITY FEED -->
+<div class="activity-section">
+  <div class="activity-header">Live Activity Feed</div>
+  <div class="activity-feed" id="activity-feed"></div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Animated progress bars
+  const agents = {
+    rex: { el: 'rex-bar', pctEl: 'rex-pct', min: 50, max: 95, speed: 0.15 },
+    pixel: { el: 'pixel-bar', pctEl: 'pixel-pct', min: 20, max: 85, speed: 0.08 },
+    nova: { el: 'nova-bar', pctEl: 'nova-pct', min: 40, max: 98, speed: 0.2 },
+    ace: { el: 'ace-bar', pctEl: 'ace-pct', min: 30, max: 90, speed: 0.12 },
+    flux: { el: 'flux-bar', pctEl: 'flux-pct', min: 60, max: 99, speed: 0.18 },
+    dash: { el: 'dash-bar', pctEl: 'dash-pct', min: 10, max: 80, speed: 0.1 },
+  };
+
+  Object.values(agents).forEach(a => {
+    a.current = parseFloat(document.getElementById(a.el).style.width);
+    a.target = a.current;
+    a.direction = 1;
+  });
+
+  function animateProgress() {
+    Object.values(agents).forEach(a => {
+      if (Math.abs(a.current - a.target) < 1) {
+        a.target = a.direction > 0
+          ? a.min + Math.random() * (a.max - a.min)
+          : a.min + Math.random() * 20;
+        a.direction *= -1;
+      }
+      a.current += (a.target - a.current) * 0.02;
+      document.getElementById(a.el).style.width = a.current + '%';
+      document.getElementById(a.pctEl).textContent = Math.round(a.current) + '%';
+    });
+    requestAnimationFrame(animateProgress);
+  }
+  animateProgress();
+
+  // Completed counter
+  let completed = 34;
+  setInterval(() => {
+    if (Math.random() > 0.7) {
+      completed++;
+      document.getElementById('completed-today').textContent = completed;
+    }
+  }, 8000);
+
+  // Tasks active counter
+  setInterval(() => {
+    const active = 10 + Math.floor(Math.random() * 6);
+    document.getElementById('tasks-active').textContent = active;
+  }, 5000);
+
+  // Activity feed
+  const activities = [
+    { agent: 'rex', cls: 'rex', msg: 'Found 3 new leads in Austin, TX — scored and queued for Ace' },
+    { agent: 'Ace', cls: 'ace', msg: 'Cold email drafted for Bella\'s Nail Studio — awaiting approval' },
+    { agent: 'Nova', cls: 'nova', msg: 'TikTok script completed: "3 signs your business needs a website"' },
+    { agent: 'Pixel', cls: 'pixel', msg: 'Mario\'s Italian Kitchen — hero section and nav deployed' },
+    { agent: 'Flux', cls: 'flux', msg: 'Etsy order #1847 marked as shipped — tracking number logged' },
+    { agent: 'Dash', cls: 'dash', msg: 'Weekly revenue report: $1,450 across 3 streams (+18% WoW)' },
+    { agent: 'Rex', cls: 'rex', msg: 'Etsy niche validated: "minimalist wallpapers" — low competition, high demand' },
+    { agent: 'Ace', cls: 'ace', msg: 'Follow-up #2 sent to Sunrise Yoga — Day 4 sequence' },
+    { agent: 'Nova', cls: 'nova', msg: 'Etsy listing written: 3 title variations + 13 SEO tags ready' },
+    { agent: 'Pixel', cls: 'pixel', msg: 'Canva template #2 of 3 completed — Realtor Social Media Bundle' },
+    { agent: 'Flux', cls: 'flux', msg: 'Supabase sync complete — 3 project statuses updated' },
+    { agent: 'Dash', cls: 'dash', msg: 'Conversion rate analysis: cold email → reply = 12.5% this week' },
+    { agent: 'Rex', cls: 'rex', msg: 'Competitor pricing updated: avg web design in Austin = $1,200' },
+    { agent: 'Ace', cls: 'ace', msg: 'Proposal drafted for Fresh Cuts Barbershop — $750 package' },
+    { agent: 'Nova', cls: 'nova', msg: 'Email sequence drafted: 3-part welcome series for new Etsy buyers' },
+    { agent: 'Flux', cls: 'flux', msg: 'Invoice generated for completed Mario\'s site — $1,000' },
+    { agent: 'Dash', cls: 'dash', msg: 'Etsy shop views: 847 this week (+23% vs last week)' },
+    { agent: 'Pixel', cls: 'pixel', msg: 'Fresh Cuts mockup ready — dark theme with booking integration' },
+  ];
+
+  const feed = document.getElementById('activity-feed');
+  let feedIndex = 0;
+
+  function addActivity() {
+    const a = activities[feedIndex % activities.length];
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const item = document.createElement('div');
+    item.className = 'activity-item';
+    item.innerHTML = `
+      <span class="activity-time">${time}</span>
+      <span class="activity-agent ${a.cls}">${a.agent}</span>
+      <span class="activity-msg">${a.msg}</span>
+    `;
+
+    feed.insertBefore(item, feed.firstChild);
+
+    // Keep feed manageable
+    while (feed.children.length > 8) {
+      feed.removeChild(feed.lastChild);
+    }
+
+    feedIndex++;
+  }
+
+  // Initial feed
+  for (let i = 0; i < 5; i++) {
+    addActivity();
+  }
+
+  // Add new activity periodically
+  setInterval(addActivity, 4000);
+</script>
+
+</body>
+</html>
